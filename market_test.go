@@ -11,7 +11,7 @@ import (
 func TestGetOrders(t *testing.T) {
 	godotenv.Load()
 	client := novadax.New("", os.Getenv("ENV"))
-	response, errAPI, err := client.Market().Depth(novadax.DepthQuery{Symbol: "BTC_BRL"})
+	response, errAPI, err := client.Market().Depth(&novadax.DepthQuery{Symbol: "BTC_BRL"})
 	if err != nil {
 		t.Errorf("err : %#v", err)
 		return

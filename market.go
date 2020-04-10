@@ -33,7 +33,7 @@ func (c BookItem) Amount() float64 {
 type BookItem []float64
 
 // Depth - OrderBook in exchange
-func (p Market) Depth(query DepthQuery) (*Book, *Error, error) {
+func (p Market) Depth(query *DepthQuery) (*Book, *Error, error) {
 	var response *Book
 	if query.Limit == 0 {
 		query.Limit = 10
@@ -41,7 +41,7 @@ func (p Market) Depth(query DepthQuery) (*Book, *Error, error) {
 	if query.Symbol == "" {
 		return nil, nil, errors.New("symbol is required")
 	}
-	err, errAPI := p.client.Request("GET", "/market/depth", nil, &query, &response)
+	err, errAPI := p.client.Request("GET", "/market/depth", nil, query, &response)
 	if err != nil {
 		return nil, nil, err
 	}
