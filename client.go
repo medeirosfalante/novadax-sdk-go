@@ -39,7 +39,6 @@ func New(token, env string) *APIClient {
 	}
 }
 
-//Request - In webservice
 func (client *APIClient) Request(method, action string, body []byte, query interface{}, out interface{}) (error, *Error) {
 	if client.client == nil {
 		client.client = &http.Client{Timeout: 60 * time.Second}
@@ -53,7 +52,6 @@ func (client *APIClient) Request(method, action string, body []byte, query inter
 	if query != nil {
 		q := url.Values{}
 		queryStruct := structToMap(query)
-
 		for k, v := range queryStruct {
 			q.Add(k, fmt.Sprintf("%v", v))
 		}
@@ -64,6 +62,7 @@ func (client *APIClient) Request(method, action string, body []byte, query inter
 		return err, nil
 	}
 	bodyResponse, err := ioutil.ReadAll(res.Body)
+
 	if res.StatusCode > 201 {
 		var errAPI Error
 		err = json.Unmarshal(bodyResponse, &errAPI)
@@ -73,7 +72,16 @@ func (client *APIClient) Request(method, action string, body []byte, query inter
 		errAPI.Data = string(bodyResponse)
 		return nil, &errAPI
 	}
-	err = json.Unmarshal(bodyResponse, out)
+	response := Data{}
+	err = json.Unmarshal(bodyResponse, &response)
+	fmt.Printf("\n bodyResponse %s \n", bodyResponse)
+	dataObjet, err := json.Marshal(response.Data)
+
+	if err != nil {
+		return err, nil
+	}
+	err = json.Unmarshal(dataObjet, out)
+	fmt.Printf("\n err %s \n", err)
 	if err != nil {
 		return err, nil
 	}

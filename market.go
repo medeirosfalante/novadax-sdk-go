@@ -1,6 +1,9 @@
 package novadax
 
-import "errors"
+import (
+	"errors"
+	"strconv"
+)
 
 type DepthQuery struct {
 	Symbol string `json:"symbol"`
@@ -23,14 +26,25 @@ type Book struct {
 	Bids []BookItem `json:"bids"`
 }
 
-func (c BookItem) Price() float64 {
-	return c[0]
-}
-func (c BookItem) Amount() float64 {
-	return c[1]
+type Trades []*TradeItem
+
+type TradeItem struct {
+	Price     string `json:"price" `
+	Amount    string `json:"amount"`
+	Side      string `json:"side" `
+	Timestamp int64  `json:"timestamp" `
 }
 
-type BookItem []float64
+func (c BookItem) Price() float64 {
+	f, _ := strconv.ParseFloat(c[0], 64)
+	return f
+}
+func (c BookItem) Amount() float64 {
+	f, _ := strconv.ParseFloat(c[1], 64)
+	return f
+}
+
+type BookItem []string
 
 // Depth - OrderBook in exchange
 func (p Market) Depth(query *DepthQuery) (*Book, *Error, error) {
@@ -42,6 +56,29 @@ func (p Market) Depth(query *DepthQuery) (*Book, *Error, error) {
 		return nil, nil, errors.New("symbol is required")
 	}
 	err, errAPI := p.client.Request("GET", "/market/depth", nil, query, &response)
+	if err != nil {
+		return nil, nil, err
+	}
+	if errAPI != nil {
+		return nil, errAPI, nil
+	}
+	return response, nil, nil
+}
+
+// Trades - Trades in exchange
+func (p Market) Trades(query *DepthQuery) (*Trades, *Error, error) {
+	var response *Trades
+	if query != nil {
+		if query.Limit == 0 {
+			query.Limit = 10
+		}
+		if query.Symbol == "" {
+			return nil, nil, errors.New("symbol is required")
+		}
+	} else {
+		return nil, nil, errors.New("query is nill")
+	}
+	err, errAPI := p.client.Request("GET", "/market/trades", nil, query, &response)
 	if err != nil {
 		return nil, nil, err
 	}
